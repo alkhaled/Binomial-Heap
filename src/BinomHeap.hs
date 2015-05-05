@@ -6,16 +6,20 @@ data BinHeap tree val =   Hole (BinHeap (ChildList tree) val)
                         | Full (BinTree tree val) (BinHeap (ChildList tree) val)
                         | End deriving (Eq, Show)
 
---TODO: Complete This Implementation
-merge :: Ord val => BinHeap tree val ->  BinHeap tree val-> BinHeap tree val
-merge binHeap1 binHeap2 = case (binHeap1, binHeap2) of
+-- Note: the carry in this merge method is horribly inefficient in the case (Full, Full). We should really use a carry to make the algorithm linear, but this simpler implementation
+-- makes it easier to explain the algorithm and understand the role of type level guarantees.
+merge :: Ord val => BinHeap tree val ->  BinHeap tree val-> (val -> val -> Bool) ->BinHeap tree val
+merge binHeap1 binHeap2 cmp = case (binHeap1, binHeap2) of
                                (End, _) -> binHeap2
                                (_, End) -> binHeap1
-                               (Hole rest1, Hole rest2) -> Hole (merge rest1 rest2)
-                               (Hole rest1, Full tree rest2) -> Full tree (merge rest1 rest2)
-                               (Full tree rest1,  Hole rest2) -> Full tree (merge rest1 rest2)
+                               (Hole rest1, Hole rest2) -> Hole (merge rest1 rest2 cmp)
+                               (Hole rest1, Full tree rest2) -> Full tree (merge rest1 rest2 cmp)
+                               (Full tree rest1,  Hole rest2) -> Full tree (merge rest1 rest2 cmp)
+                               (Full tree1 rest1, Full tree2 rest2) -> Hole (merge (merge (Full (meld tree1 tree2 cmp) End) rest1 cmp) 
+                                                                                   rest2 cmp) --(merge rest1 rest2 cmp)
 
-  
+
+ 
 -- Binomial Tree Definition
 data Empty a = Empty deriving (Eq,Show)
 data BinTree child val = BinTree val (child val)  deriving (Eq,Show)
@@ -43,7 +47,7 @@ rank5 = BinTree 5 (ChildList
                                             (ChildList (BinTree 2 (ChildList (BinTree 1 Empty) Empty)) (ChildList (BinTree 1 Empty) Empty))))
                         (ChildList
                             (BinTree 3 (ChildList (
-                                                    BinTree 2 
+                                                    BinTree 2
                                                     (ChildList (BinTree 1 Empty) Empty)) (ChildList (BinTree 1 Empty) Empty))) 
                             (ChildList (BinTree 2 (
                                                     ChildList (BinTree 1 Empty) Empty)) (ChildList (BinTree 1 Empty) Empty))))
@@ -54,22 +58,9 @@ rank7 = BinTree 7 (ChildList rank6 (ChildList rank5 (ChildList rank4 (ChildList 
 
 -- # End Examples
 
---Heap Tests
-
---Test merging two heaps with no trees of the same rank
---    111   Rank3 All Full
--- + 1000   Rank4 Last Full
---  ------
---   1111   Rank4 All Full
-test_Merge_No_Carry = (merge heap3Full heap4End) == heap4Full
-            where
-                heap3Full = Full (rank1) (Full rank2 (Full rank3 (End)))
-                heap4End  = Hole (Hole (Hole (Full rank4 End)))
-                heap4Full = Full (rank1) (Full rank2 (Full rank3 (Full rank4 End)))
-
 
 
 -- | The main entry point.
 main :: IO ()
 main = do
-    putStrLn $ show $ test_Merge_No_Carry
+    putStrLn $ show $ rank7
