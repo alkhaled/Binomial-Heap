@@ -16,7 +16,7 @@ merge binHeap1 binHeap2 cmp = case (binHeap1, binHeap2) of
                                (Hole rest1, Full tree rest2) -> Full tree (merge rest1 rest2 cmp)
                                (Full tree rest1,  Hole rest2) -> Full tree (merge rest1 rest2 cmp)
                                (Full tree1 rest1, Full tree2 rest2) -> Hole (merge (merge (Full (meld tree1 tree2 cmp) End) rest1 cmp) 
-                                                                                   rest2 cmp) --(merge rest1 rest2 cmp)
+                                                                                   rest2 cmp) 
 
 
  
